@@ -106,3 +106,45 @@ export interface WebhookConfig {
   enabled: boolean;
 }
 
+export interface CVEMetricDetails {
+  attackVector: string;
+  attackComplexity: string;
+  privilegesRequired: string;
+  userInteraction: string;
+  scope: string;
+  confidentiality: string;
+  integrity: string;
+  availability: string;
+}
+
+export interface MITRETechnique {
+  id: string;
+  name: string;
+  tactic: string;
+}
+
+export interface CVEReference {
+  name: string;
+  url: string;
+}
+
+export interface CVEDetail {
+  cveId: string;
+  title: string;
+  severity: Severity;
+  cvssScore: number;
+  vectorString: string;
+  publishedDate: string;
+  lastModified: string;
+  description: string;
+  cwe: string;
+  cisaKev: boolean;
+  cisaKevDate?: string;
+  metrics: CVEMetricDetails;
+  mitreTechniques: MITRETechnique[];
+  affectedProducts: string[];
+  patchAdvisory: string;
+  references: CVEReference[];
+}
+
+

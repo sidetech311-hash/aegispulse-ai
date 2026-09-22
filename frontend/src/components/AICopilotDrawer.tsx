@@ -7,6 +7,7 @@ import {
 import type { Incident, AICopilotAnalysis, AIChatMessage } from '../types';
 import { getAICopilotAnalysis, sendCopilotChat, dispatchWebhookAlert } from '../services/api';
 import { ExecutiveReportModal } from './ExecutiveReportModal';
+import { CVEDetailsModal } from './CVEDetailsModal';
 
 interface AICopilotDrawerProps {
   incident: Incident | null;
@@ -19,6 +20,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({ incident, onCl
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [isCVEModalOpen, setIsCVEModalOpen] = useState(false);
   const [broadcasting, setBroadcasting] = useState(false);
   const [broadcastNotice, setBroadcastNotice] = useState<string | null>(null);
 
@@ -200,9 +202,16 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({ incident, onCl
               <span>Target: <strong className="text-slate-200">{incident.targetAsset}</strong></span>
               <span>Vector: <strong className="text-slate-200">{incident.attackVector}</strong></span>
               {incident.cve && (
-                <span className="bg-slate-800 text-rose-300 px-2 py-0.5 rounded border border-rose-900/60">
-                  {incident.cve}
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsCVEModalOpen(true)}
+                  className="bg-rose-950/80 hover:bg-rose-900 text-rose-300 px-2.5 py-0.5 rounded border border-rose-800/80 hover:border-rose-500 font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm group"
+                  title="Inspect CVE Threat Intelligence Dossier"
+                >
+                  <ShieldAlert className="w-3.5 h-3.5 text-rose-400 group-hover:scale-110 transition-transform" />
+                  <span>{incident.cve}</span>
+                  <span className="text-[10px] text-cyan-400 font-sans font-bold underline ml-1">Threat Intel &rarr;</span>
+                </button>
               )}
             </div>
           </div>
@@ -406,6 +415,13 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({ incident, onCl
         incident={incident}
         analysis={analysis}
         type="incident"
+      />
+
+      {/* CVE Threat Intelligence Modal */}
+      <CVEDetailsModal
+        cveId={incident.cve || null}
+        isOpen={isCVEModalOpen}
+        onClose={() => setIsCVEModalOpen(false)}
       />
     </div>
   );

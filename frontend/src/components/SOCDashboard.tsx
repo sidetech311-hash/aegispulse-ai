@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { 
-  Shield, ShieldAlert, Cpu, Plus, Download, Filter, Server, Sparkles, ArrowLeft
+  Shield, ShieldAlert, Cpu, Plus, Download, Filter, Server, Sparkles, ArrowLeft, Search
 } from 'lucide-react';
 import type { Incident, MonitoredAsset } from '../types';
 import { INITIAL_INCIDENTS, INITIAL_ASSETS } from '../services/api';
 import { AICopilotDrawer } from './AICopilotDrawer';
+import { CVEDetailsModal } from './CVEDetailsModal';
 
 interface SOCDashboardProps {
   onBackToLanding: () => void;
@@ -17,6 +18,11 @@ export const SOCDashboard: React.FC<SOCDashboardProps> = ({ onBackToLanding }) =
   const [severityFilter, setSeverityFilter] = useState<string>('ALL');
   const [activeTab, setActiveTab] = useState<'incidents' | 'assets'>('incidents');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Threat Intel & CVE state
+  const [selectedCVE, setSelectedCVE] = useState<string | null>(null);
+  const [isCVEModalOpen, setIsCVEModalOpen] = useState(false);
+  const [cveSearchInput, setCveSearchInput] = useState('');
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -263,6 +269,52 @@ export const SOCDashboard: React.FC<SOCDashboardProps> = ({ onBackToLanding }) =
         {activeTab === 'incidents' && (
           <div className="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-md">
             
+            {/* CVE Threat Intelligence Lookup Bar */}
+            <div className="p-4 border-b border-slate-800 bg-slate-950/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!cveSearchInput.trim()) return;
+                  setSelectedCVE(cveSearchInput.trim().toUpperCase());
+                  setIsCVEModalOpen(true);
+                }}
+                className="flex items-center gap-2 w-full sm:max-w-md relative"
+              >
+                <Search className="w-4 h-4 text-cyan-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={cveSearchInput}
+                  onChange={(e) => setCveSearchInput(e.target.value)}
+                  placeholder="Lookup CVE Intel (e.g. CVE-2024-6387, Log4Shell)..."
+                  className="w-full pl-9 pr-24 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-mono focus:outline-none focus:border-cyan-400"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-1 px-3 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold cursor-pointer"
+                >
+                  Lookup
+                </button>
+              </form>
+
+              {/* Quick CVE Presets */}
+              <div className="flex items-center gap-2 text-xs font-mono text-slate-400 overflow-x-auto w-full sm:w-auto">
+                <span className="text-[11px] text-slate-500 shrink-0">Featured CVEs:</span>
+                {['CVE-2024-6387', 'CVE-2021-44228', 'CVE-2024-3094'].map((cve) => (
+                  <button
+                    key={cve}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCVE(cve);
+                      setIsCVEModalOpen(true);
+                    }}
+                    className="px-2 py-0.5 rounded bg-slate-950 hover:bg-slate-800 text-cyan-300 border border-slate-800 hover:border-cyan-500/50 text-[11px] transition-colors cursor-pointer shrink-0"
+                  >
+                    {cve}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Filter controls */}
             <div className="p-4 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3 bg-slate-950/50">
               <div className="flex items-center gap-2">
@@ -329,9 +381,25 @@ export const SOCDashboard: React.FC<SOCDashboardProps> = ({ onBackToLanding }) =
 
                       {/* Title & Vector */}
                       <td className="py-4 px-4 max-w-sm">
-                        <p className="font-semibold text-white group-hover:text-cyan-300 transition-colors">
-                          {incident.title}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                            {incident.title}
+                          </p>
+                          {incident.cve && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCVE(incident.cve!);
+                                setIsCVEModalOpen(true);
+                              }}
+                              className="px-1.5 py-0.5 rounded bg-rose-950/80 text-rose-300 border border-rose-800 hover:border-rose-500 text-[10px] font-mono hover:scale-105 transition-all cursor-pointer shrink-0"
+                              title="Inspect CVE Threat Intelligence"
+                            >
+                              {incident.cve}
+                            </button>
+                          )}
+                        </div>
                         <p className="text-[11px] text-slate-400 font-mono mt-0.5 truncate">
                           {incident.attackVector}
                         </p>
@@ -434,6 +502,13 @@ export const SOCDashboard: React.FC<SOCDashboardProps> = ({ onBackToLanding }) =
         incident={selectedIncident}
         onClose={() => setSelectedIncident(null)}
         onResolve={handleResolve}
+      />
+
+      {/* CVE Threat Intelligence Dossier Modal */}
+      <CVEDetailsModal
+        cveId={selectedCVE}
+        isOpen={isCVEModalOpen}
+        onClose={() => setIsCVEModalOpen(false)}
       />
 
     </div>

@@ -24,6 +24,7 @@ from ..services.ai_engine import (
     test_provider_connection
 )
 from ..services.webhook_service import dispatch_webhook_alert, test_webhook_connection
+from ..services.threat_intel import fetch_cve_intel
 
 router = APIRouter()
 
@@ -298,4 +299,10 @@ def test_webhook_endpoint(req: WebhookTestRequest):
         platform=res["platform"],
         message=res["message"]
     )
+
+@router.get("/cve/{cve_id}")
+def get_cve_endpoint(cve_id: str):
+    """Retrieve detailed threat intelligence, CVSS v3.1 vector, and MITRE mapping for a CVE."""
+    return fetch_cve_intel(cve_id)
+
 
