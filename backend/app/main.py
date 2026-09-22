@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .database.session import Base, engine
+from .database.session import init_db
 from .api.endpoints import router as api_router
 from .api.auth import router as auth_router
 
-# Initialize database tables
-Base.metadata.create_all(bind=engine)
+# Initialize database tables and self-healing migrations
+init_db()
 
 app = FastAPI(
     title="AegisPulse AI API",

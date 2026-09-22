@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, Sparkles, Terminal, Copy, Check, ShieldAlert, Cpu, 
-  CheckCircle2, Loader2, Send, MessageSquare, CornerDownRight 
+  CheckCircle2, Loader2, Send, MessageSquare, CornerDownRight,
+  FileText
 } from 'lucide-react';
 import type { Incident, AICopilotAnalysis, AIChatMessage } from '../types';
 import { getAICopilotAnalysis, sendCopilotChat } from '../services/api';
+import { ExecutiveReportModal } from './ExecutiveReportModal';
 
 interface AICopilotDrawerProps {
   incident: Incident | null;
@@ -16,6 +18,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({ incident, onCl
   const [analysis, setAnalysis] = useState<AICopilotAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   // Chat follow-up state
   const [chatMessages, setChatMessages] = useState<AIChatMessage[]>([]);
@@ -118,13 +121,24 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({ incident, onCl
               </div>
             </div>
 
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-              aria-label="Close drawer"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsReportOpen(true)}
+                className="px-3 py-1.5 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/50 hover:border-cyan-400 text-cyan-300 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                title="Export executive PDF & compliance audit report"
+              >
+                <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Export Dossier (PDF)</span>
+              </button>
+
+              <button
+                onClick={onClose}
+                className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                aria-label="Close drawer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Incident Context Banner */}
@@ -346,6 +360,15 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({ incident, onCl
         </div>
 
       </div>
+
+      {/* Executive PDF & Audit Dossier Modal */}
+      <ExecutiveReportModal
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        incident={incident}
+        analysis={analysis}
+        type="incident"
+      />
     </div>
   );
 };

@@ -45,3 +45,43 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #334155;
 }
+
+/* Print and PDF generation styles */
+@media print {
+  @page {
+    margin: 12mm;
+    size: auto;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Hide everything except the printable dossier container */
+  body > * {
+    visibility: hidden;
+  }
+
+  #printable-dossier,
+  #printable-dossier * {
+    visibility: visible !important;
+  }
+
+  #printable-dossier {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+}

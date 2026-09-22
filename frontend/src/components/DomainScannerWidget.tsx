@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Search, Shield, ShieldCheck, ShieldAlert, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { Search, Shield, ShieldCheck, ShieldAlert, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2, FileText } from 'lucide-react';
 import type { ScanResult } from '../types';
 import { performDomainScan } from '../services/api';
+import { ExecutiveReportModal } from './ExecutiveReportModal';
 
 interface DomainScannerWidgetProps {
   onSendToConsole?: (result: ScanResult) => void;
@@ -12,6 +13,7 @@ export const DomainScannerWidget: React.FC<DomainScannerWidgetProps> = ({ onSend
   const [isScanning, setIsScanning] = useState(false);
   const [scanStep, setScanStep] = useState<string>('');
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
 
   const handleScan = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -135,6 +137,13 @@ export const DomainScannerWidget: React.FC<DomainScannerWidgetProps> = ({ onSend
                   <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest bg-cyan-950/80 px-2.5 py-0.5 rounded border border-cyan-800/50">
                     Audit Report
                   </span>
+                  <button
+                    onClick={() => setIsAuditModalOpen(true)}
+                    className="px-2.5 py-0.5 rounded bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <FileText className="w-3 h-3 text-cyan-400" />
+                    <span>Export PDF</span>
+                  </button>
                   <span className="text-xs text-slate-400 font-mono">
                     Target: <strong className="text-white">{scanResult.domain}</strong> ({scanResult.ip})
                   </span>
@@ -264,17 +273,35 @@ export const DomainScannerWidget: React.FC<DomainScannerWidgetProps> = ({ onSend
               <p className="text-xs text-slate-400">
                 Want 24/7 continuous scans with automated AI triage when issues arise?
               </p>
-              <button
-                onClick={() => onSendToConsole?.(scanResult)}
-                className="px-5 py-2.5 rounded-xl bg-cyan-500/20 border border-cyan-500/50 hover:bg-cyan-500/30 text-cyan-300 font-semibold text-xs tracking-wide transition-all flex items-center gap-2 cursor-pointer"
-              >
-                Track This Domain in SOC Console
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsAuditModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/50 hover:border-cyan-400 text-cyan-300 font-semibold text-xs tracking-wide transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+                >
+                  <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                  Export Audit Dossier (PDF)
+                </button>
+
+                <button
+                  onClick={() => onSendToConsole?.(scanResult)}
+                  className="px-5 py-2.5 rounded-xl bg-cyan-500/20 border border-cyan-500/50 hover:bg-cyan-500/30 text-cyan-300 font-semibold text-xs tracking-wide transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  Track in SOC Console
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
 
           </div>
         )}
+
+        {/* Executive Surface Audit Dossier Modal */}
+        <ExecutiveReportModal
+          isOpen={isAuditModalOpen}
+          onClose={() => setIsAuditModalOpen(false)}
+          scanResult={scanResult}
+          type="surface-audit"
+        />
 
       </div>
     </section>

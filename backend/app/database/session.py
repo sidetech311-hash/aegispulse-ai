@@ -21,9 +21,22 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
+def init_db():
+    Base.metadata.create_all(bind=engine)
+    if "sqlite" in DATABASE_URL:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            for table in ["incidents", "assets"]:
+                try:
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN company_name VARCHAR DEFAULT 'Apex Infrastructure'"))
+                    conn.commit()
+                except Exception:
+                    pass
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
