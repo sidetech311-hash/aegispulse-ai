@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Activity, Terminal, ExternalLink, Sparkles, User, LogOut } from 'lucide-react';
+import { Shield, Activity, Terminal, ExternalLink, Sparkles, User, LogOut, Radio } from 'lucide-react';
 import type { UserProfileResponse } from '../types';
 
 interface NavbarProps {
@@ -7,6 +7,7 @@ interface NavbarProps {
   setCurrentView: (view: 'landing' | 'dashboard') => void;
   onOpenScanner?: () => void;
   onOpenAISettings?: () => void;
+  onOpenWebhooks?: () => void;
   activeAIProvider?: string;
   currentUser?: UserProfileResponse | null;
   onOpenAuth?: () => void;
@@ -18,6 +19,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setCurrentView, 
   onOpenScanner, 
   onOpenAISettings,
+  onOpenWebhooks,
   activeAIProvider = 'gemini',
   currentUser,
   onOpenAuth,
@@ -103,6 +105,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
             <span>AI:</span>
             <span className="capitalize font-bold text-white">{activeAIProvider}</span>
+          </button>
+
+          {/* Webhooks Config Pill */}
+          <button
+            onClick={onOpenWebhooks}
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-indigo-500/40 hover:border-indigo-400 text-xs font-mono text-indigo-300 transition-all cursor-pointer shadow-sm"
+            title="Configure Slack & Discord Alert Webhooks"
+          >
+            <Radio className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Webhooks</span>
           </button>
 
           {/* User Auth Section */}

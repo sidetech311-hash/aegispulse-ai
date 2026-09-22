@@ -7,6 +7,7 @@ import { PricingSection } from './components/PricingSection';
 import { SOCDashboard } from './components/SOCDashboard';
 import { AISettingsModal } from './components/AISettingsModal';
 import { AuthModal } from './components/AuthModal';
+import { WebhookModal } from './components/WebhookModal';
 import { Footer } from './components/Footer';
 import type { ScanResult, UserProfileResponse } from './types';
 import { fetchAIConfig } from './services/api';
@@ -18,6 +19,7 @@ export function App() {
   const [selectedPlanModal, setSelectedPlanModal] = useState<string | null>(null);
   const [isAISettingsOpen, setIsAISettingsOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isWebhookModalOpen, setIsWebhookModalOpen] = useState(false);
   const [activeAIProvider, setActiveAIProvider] = useState<string>('gemini');
   const [currentUser, setCurrentUser] = useState<UserProfileResponse | null>(null);
 
@@ -62,6 +64,7 @@ export function App() {
         setCurrentView={setCurrentView}
         onOpenScanner={handleOpenScanner}
         onOpenAISettings={() => setIsAISettingsOpen(true)}
+        onOpenWebhooks={() => setIsWebhookModalOpen(true)}
         activeAIProvider={activeAIProvider}
         currentUser={currentUser}
         onOpenAuth={() => setIsAuthModalOpen(true)}
@@ -93,6 +96,12 @@ export function App() {
         isOpen={isAISettingsOpen}
         onClose={() => setIsAISettingsOpen(false)}
         onConfigSaved={(cfg) => setActiveAIProvider(cfg.provider)}
+      />
+
+      {/* Slack & Discord Webhooks Integration Modal */}
+      <WebhookModal
+        isOpen={isWebhookModalOpen}
+        onClose={() => setIsWebhookModalOpen(false)}
       />
 
       {/* User Authentication Modal */}

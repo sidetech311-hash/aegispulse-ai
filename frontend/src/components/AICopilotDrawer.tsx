@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, Sparkles, Terminal, Copy, Check, ShieldAlert, Cpu, 
   CheckCircle2, Loader2, Send, MessageSquare, CornerDownRight,
-  FileText
+  FileText, Radio
 } from 'lucide-react';
 import type { Incident, AICopilotAnalysis, AIChatMessage } from '../types';
-import { getAICopilotAnalysis, sendCopilotChat } from '../services/api';
+import { getAICopilotAnalysis, sendCopilotChat, dispatchWebhookAlert } from '../services/api';
 import { ExecutiveReportModal } from './ExecutiveReportModal';
 
 interface AICopilotDrawerProps {
@@ -19,6 +19,8 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({ incident, onCl
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [broadcasting, setBroadcasting] = useState(false);
+  const [broadcastNotice, setBroadcastNotice] = useState<string | null>(null);
 
   // Chat follow-up state
   const [chatMessages, setChatMessages] = useState<AIChatMessage[]>([]);
@@ -55,6 +57,15 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({ incident, onCl
   const handleResolveClick = () => {
     onResolve(incident.id);
     onClose();
+  };
+
+  const handleBroadcastAlert = async () => {
+    if (!incident || broadcasting) return;
+    setBroadcasting(true);
+    const res = await dispatchWebhookAlert(incident);
+    setBroadcastNotice(res.message);
+    setBroadcasting(false);
+    setTimeout(() => setBroadcastNotice(null), 4500);
   };
 
   // Handle conversational inquiry with AI Copilot
@@ -123,6 +134,20 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({ incident, onCl
 
             <div className="flex items-center gap-2">
               <button
+                onClick={handleBroadcastAlert}
+                disabled={broadcasting}
+                className="px-3 py-1.5 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/50 hover:border-indigo-400 text-indigo-300 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm disabled:opacity-50"
+                title="Broadcast incident alert card to Slack & Discord"
+              >
+                {broadcasting ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400" />
+                ) : (
+                  <Radio className="w-3.5 h-3.5 text-indigo-400" />
+                )}
+                <span>Broadcast Alert</span>
+              </button>
+
+              <button
                 onClick={() => setIsReportOpen(true)}
                 className="px-3 py-1.5 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/50 hover:border-cyan-400 text-cyan-300 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
                 title="Export executive PDF & compliance audit report"
@@ -140,6 +165,19 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({ incident, onCl
               </button>
             </div>
           </div>
+
+          {/* Webhook Broadcast Notice Banner */}
+          {broadcastNotice && (
+            <div className="px-6 py-2.5 bg-indigo-950/90 border-b border-indigo-700/80 text-xs text-indigo-200 font-mono flex items-center justify-between animate-fade-in">
+              <div className="flex items-center gap-2">
+                <Radio className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
+                <span>{broadcastNotice}</span>
+              </div>
+              <button onClick={() => setBroadcastNotice(null)} className="text-slate-400 hover:text-white cursor-pointer">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
 
           {/* Incident Context Banner */}
           <div className="p-6 bg-slate-950/40 border-b border-slate-800">

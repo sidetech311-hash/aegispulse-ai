@@ -98,3 +98,11 @@ export interface AuthTokenResponse {
   user: UserProfileResponse;
 }
 
+export interface WebhookConfig {
+  slackUrl: string;
+  discordUrl: string;
+  autoAlertCritical: boolean;
+  autoAlertHigh: boolean;
+  enabled: boolean;
+}
+

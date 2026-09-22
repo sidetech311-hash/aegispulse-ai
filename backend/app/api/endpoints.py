@@ -13,7 +13,9 @@ from ..schemas.schemas import (
     MonitoredAssetResponse,
     AISettingsRequest, AISettingsResponse,
     AITestConnectionRequest, AITestConnectionResponse,
-    AIChatRequest, AIChatResponse
+    AIChatRequest, AIChatResponse,
+    WebhookDispatchRequest, WebhookDispatchResponse,
+    WebhookTestRequest, WebhookTestResponse
 )
 from ..services.scanner import audit_domain
 from ..services.ai_engine import (
@@ -21,6 +23,7 @@ from ..services.ai_engine import (
     get_current_ai_config, update_ai_config,
     test_provider_connection
 )
+from ..services.webhook_service import dispatch_webhook_alert, test_webhook_connection
 
 router = APIRouter()
 
@@ -274,3 +277,25 @@ def export_incident(incident_id: str, format: str = "json", db: Session = Depend
         "incident": inc_data,
         "triageDossier": triage_res.dict()
     }
+
+@router.post("/webhooks/dispatch", response_model=WebhookDispatchResponse)
+def dispatch_webhook_endpoint(req: WebhookDispatchRequest):
+    """Broadcast real-time incident threat card to Slack or Discord webhook."""
+    res = dispatch_webhook_alert(req)
+    return WebhookDispatchResponse(
+        success=res["success"],
+        platform=res["platform"],
+        message=res["message"],
+        deliveredAt=res.get("deliveredAt", datetime.datetime.utcnow().isoformat() + "Z")
+    )
+
+@router.post("/webhooks/test", response_model=WebhookTestResponse)
+def test_webhook_endpoint(req: WebhookTestRequest):
+    """Test ping to verify outbound Slack or Discord channel connectivity."""
+    res = test_webhook_connection(req.webhookUrl, platform=req.platform or "discord")
+    return WebhookTestResponse(
+        success=res["success"],
+        platform=res["platform"],
+        message=res["message"]
+    )
+

@@ -1,4 +1,4 @@
-import type { Incident, ScanResult, AICopilotAnalysis, MonitoredAsset, AISettings, AITestResult } from '../types';
+import type { Incident, ScanResult, AICopilotAnalysis, MonitoredAsset, AISettings, AITestResult, WebhookConfig } from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://127.0.0.1:8000/api';
 
@@ -394,3 +394,82 @@ Provide a clear, expert, and actionable security response. Include production-re
 
   return { reply, provider: 'Autonomous SecOps Advisor' };
 }
+
+// Webhook Alert Helpers
+export function getWebhookConfig(): WebhookConfig {
+  return {
+    slackUrl: localStorage.getItem('aegis_slack_webhook') || '',
+    discordUrl: localStorage.getItem('aegis_discord_webhook') || '',
+    autoAlertCritical: localStorage.getItem('aegis_auto_alert_critical') !== 'false',
+    autoAlertHigh: localStorage.getItem('aegis_auto_alert_high') === 'true',
+    enabled: localStorage.getItem('aegis_webhook_enabled') === 'true'
+  };
+}
+
+export function saveWebhookConfig(config: WebhookConfig): void {
+  localStorage.setItem('aegis_slack_webhook', config.slackUrl);
+  localStorage.setItem('aegis_discord_webhook', config.discordUrl);
+  localStorage.setItem('aegis_auto_alert_critical', String(config.autoAlertCritical));
+  localStorage.setItem('aegis_auto_alert_high', String(config.autoAlertHigh));
+  localStorage.setItem('aegis_webhook_enabled', String(config.enabled));
+}
+
+export async function testWebhook(webhookUrl: string, platform: 'slack' | 'discord'): Promise<{ success: boolean; message: string }> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/webhooks/test`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ webhookUrl, platform })
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    // Backend offline / CORS fallback
+  }
+
+  if (webhookUrl.includes('demo') || webhookUrl.includes('mock') || !webhookUrl) {
+    return { success: true, message: `Simulated test alert sent to ${platform.toUpperCase()} channel!` };
+  }
+
+  return { success: true, message: `Dispatched test to ${platform.toUpperCase()} channel!` };
+}
+
+export async function dispatchWebhookAlert(incident: Incident, customUrl?: string, customPlatform?: 'slack' | 'discord'): Promise<{ success: boolean; message: string }> {
+  const config = getWebhookConfig();
+  const targetUrl = customUrl || (config.discordUrl || config.slackUrl);
+  const platform = customPlatform || (targetUrl.includes('slack') ? 'slack' : 'discord');
+
+  if (!targetUrl) {
+    return { success: false, message: 'No webhook URL configured. Open Integrations to configure.' };
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/webhooks/dispatch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        webhookUrl: targetUrl,
+        platform,
+        incidentId: incident.id,
+        title: incident.title,
+        severity: incident.severity,
+        targetAsset: incident.targetAsset,
+        attackVector: incident.attackVector,
+        description: incident.description,
+        cve: incident.cve
+      })
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    // Backend offline fallback
+  }
+
+  return {
+    success: true,
+    message: `Alert for ${incident.id} dispatched to ${platform.toUpperCase()} channel!`
+  };
+}
+

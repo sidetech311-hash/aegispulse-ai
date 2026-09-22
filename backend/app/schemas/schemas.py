@@ -137,3 +137,32 @@ class AuthTokenResponse(BaseModel):
     accessToken: str
     tokenType: str = "bearer"
     user: UserProfileResponse
+
+# Webhook Integration Schemas
+class WebhookDispatchRequest(BaseModel):
+    webhookUrl: str
+    platform: Optional[str] = "discord" # "slack" or "discord"
+    incidentId: str
+    title: str
+    severity: str
+    targetAsset: str
+    attackVector: str
+    description: str
+    cve: Optional[str] = None
+    remediationCommand: Optional[str] = None
+
+class WebhookDispatchResponse(BaseModel):
+    success: bool
+    platform: str
+    message: str
+    deliveredAt: str
+
+class WebhookTestRequest(BaseModel):
+    webhookUrl: str
+    platform: Optional[str] = "discord"
+
+class WebhookTestResponse(BaseModel):
+    success: bool
+    platform: str
+    message: str
+
