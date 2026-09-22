@@ -154,7 +154,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
 
           <a
-            href="https://github.com"
+            href="https://github.com/sidetech311-hash/aegispulse-ai"
             target="_blank"
             rel="noreferrer"
             className="hidden xl:flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-400 hover:text-cyan-300 border border-slate-800 rounded-lg hover:border-slate-700 transition-colors"
