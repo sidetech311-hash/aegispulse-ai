@@ -1,6 +1,6 @@
 import type { UserProfileResponse, AuthTokenResponse } from '../types';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://127.0.0.1:8000/api';
 
 const TOKEN_KEY = 'aegis_access_token';
 const USER_KEY = 'aegis_user_profile';
