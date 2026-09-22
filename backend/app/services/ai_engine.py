@@ -12,6 +12,7 @@ from .copilot import triage_incident as fallback_triage
 CONFIG = {
     "provider": os.environ.get("AI_PROVIDER", "gemini"), # "gemini", "openai", "ollama", "heuristic"
     "gemini_api_key": os.environ.get("GEMINI_API_KEY", ""),
+    "gemini_model": os.environ.get("GEMINI_MODEL", "gemini-3.6-flash"),
     "openai_api_key": os.environ.get("OPENAI_API_KEY", ""),
     "ollama_host": os.environ.get("OLLAMA_HOST", "http://localhost:11434"),
     "ollama_model": os.environ.get("OLLAMA_MODEL", "llama3.2"),
@@ -45,13 +46,14 @@ def test_provider_connection(provider: str, api_key: str, ollama_host: str = "ht
             key = api_key or CONFIG["gemini_api_key"]
             if not key:
                 return {"success": False, "message": "Gemini API key is required"}
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}"
+            model = CONFIG.get("gemini_model", "gemini-3.6-flash")
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
             payload = {
                 "contents": [{"parts": [{"text": "Ping test. Reply with 'READY'."}]}]
             }
             resp = requests.post(url, json=payload, timeout=8.0)
             if resp.status_code == 200:
-                return {"success": True, "provider": "Google Gemini", "model": "gemini-2.5-flash", "message": "Connected successfully to Google Gemini API"}
+                return {"success": True, "provider": "Google Gemini", "model": model, "message": f"Connected successfully to Google Gemini API ({model})"}
             return {"success": False, "message": f"Gemini error ({resp.status_code}): {resp.text[:150]}"}
 
         elif provider == "openai":
@@ -125,7 +127,8 @@ Do NOT include markdown backticks like ```json. Return raw JSON only."""
 
     try:
         if provider == "gemini" and gemini_key:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+            model = CONFIG.get("gemini_model", "gemini-3.6-flash")
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={gemini_key}"
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {
@@ -222,13 +225,14 @@ Provide copyable CLI commands, firewall configurations, or mitigation steps when
     # 1. Google Gemini
     if provider == "gemini" and gemini_key:
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+            model = CONFIG.get("gemini_model", "gemini-3.6-flash")
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={gemini_key}"
             parts = [{"text": f"{system_instruction}\n\nUser Question: {req.message}"}]
             payload = {"contents": [{"parts": parts}]}
             resp = requests.post(url, json=payload, timeout=12.0)
             if resp.status_code == 200:
                 reply = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
-                return AIChatResponse(reply=reply, provider="Google Gemini 2.5 Flash")
+                return AIChatResponse(reply=reply, provider=f"Google Gemini ({model})")
         except Exception as e:
             print("Gemini chat error:", e)
 

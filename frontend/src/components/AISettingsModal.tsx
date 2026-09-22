@@ -114,7 +114,7 @@ export const AISettingsModal: React.FC<AISettingsModalProps> = ({ isOpen, onClos
                   {provider === 'gemini' && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />}
                 </div>
                 <p className="text-xs font-bold text-white">Google Gemini</p>
-                <p className="text-[10px] text-slate-400 font-mono mt-0.5">2.5 Flash / Free</p>
+                <p className="text-[10px] text-slate-400 font-mono mt-0.5">3.6 Flash / Free</p>
               </button>
 
               {/* OpenAI */}
@@ -210,7 +210,7 @@ export const AISettingsModal: React.FC<AISettingsModalProps> = ({ isOpen, onClos
                 </button>
               </div>
               <p className="text-[11px] text-slate-500 font-mono">
-                Model: <strong>gemini-2.5-flash</strong> (Ultra-fast structured security responses)
+                Model: <strong>gemini-3.6-flash</strong> (Ultra-fast structured security responses)
               </p>
             </div>
           )}
