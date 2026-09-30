@@ -1,6 +1,6 @@
 import type { Incident, ScanResult, AICopilotAnalysis, MonitoredAsset, AISettings, AITestResult, WebhookConfig, CVEDetail } from '../types';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://127.0.0.1:8000/api';
+const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || (import.meta.env.VITE_API_BASE_URL as string) || 'http://127.0.0.1:8000/api';
 
 // Initial baseline mock data
 export const INITIAL_INCIDENTS: Incident[] = [

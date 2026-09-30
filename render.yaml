@@ -1,14 +1,18 @@
 services:
   - type: web
-    name: aegispulse-backend
-    env: python
+    name: aegispulse-api
+    runtime: python
+    region: oregon
+    plan: free
+    branch: main
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.0
-      - key: JWT_SECRET_KEY
-        generateValue: true
-      - key: AI_PROVIDER
-        value: gemini
+        value: 3.12.2
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
